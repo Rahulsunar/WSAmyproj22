@@ -11,8 +11,8 @@ class CustomCarousel extends StatelessWidget {
       child: CarouselSlider(
         options: CarouselOptions(
           aspectRatio: 2.0,
-          autoPlay:
-              true, // Use autoPlay instead of autoplay if required by your package version
+          autoPlay: true,
+          enlargeCenterPage: true,
         ),
         items: List.generate(imageSliders.length, (index) {
           return Card(
@@ -22,10 +22,36 @@ class CustomCarousel extends StatelessWidget {
             ),
             child: Container(
               decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
                 image: DecorationImage(
+                  fit: BoxFit.cover,
                   image: NetworkImage(
-                      imageSliders[index]), // Access the image here
-                  fit: BoxFit.cover, // Fit the image inside the card
+                    imageSliders[index],
+                  ), // Access the image here
+                  // Fit the image inside the card
+                ),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(colors: [
+                    Colors.black.withOpacity(0.5),
+                    Colors.transparent,
+                  ]),
+                ),
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8, left: 8),
+                    child: Text(
+                      articleTitle[index],
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.width * 0.05,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
