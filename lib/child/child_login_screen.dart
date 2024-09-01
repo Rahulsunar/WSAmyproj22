@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:women_safety_app/components/PrimaryButton.dart';
 import 'package:women_safety_app/components/SecondaryButton.dart';
 import 'package:women_safety_app/components/custom_textfield.dart';
-import 'package:women_safety_app/register_child.dart';
+import 'package:women_safety_app/child/register_child.dart';
+import 'package:women_safety_app/parent/parent_register_screen.dart';
 import 'package:women_safety_app/utils/constants.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -122,9 +123,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               Secondarybutton(
-                  title: 'Register new user',
+                  title: 'Register As Child',
                   onPressed: () {
-                    goTo(context, RegisterChild());
+                    goTo(context, RegisterChildScreen());
+                  }),
+              Secondarybutton(
+                  title: 'Register As Parent',
+                  onPressed: () {
+                    goTo(context, RegisterParentScreen());
                   }),
             ],
           ),

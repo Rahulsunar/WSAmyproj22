@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:women_safety_app/components/PrimaryButton.dart';
 import 'package:women_safety_app/components/SecondaryButton.dart';
 import 'package:women_safety_app/components/custom_textfield.dart';
-import 'package:women_safety_app/login_screen.dart';
+import 'package:women_safety_app/child/child_login_screen.dart';
 import 'package:women_safety_app/utils/constants.dart';
 
-class RegisterChild extends StatefulWidget {
+class RegisterChildScreen extends StatefulWidget {
   @override
-  State<RegisterChild> createState() => _RegisterChildState();
+  State<RegisterChildScreen> createState() => _RegisterChildScreenState();
 }
 
-class _RegisterChildState extends State<RegisterChild> {
+class _RegisterChildScreenState extends State<RegisterChildScreen> {
   bool isPasswordShown = true;
 
   final _formKey = GlobalKey<FormState>();
