@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:women_safety_app/components/PrimaryButton.dart';
 import 'package:women_safety_app/components/SecondaryButton.dart';
@@ -19,6 +21,23 @@ class _RegisterChildScreenState extends State<RegisterChildScreen> {
 
   _onSubmit() {
     _formKey.currentState!.save();
+    if (_formData['password'] != _formData['rpassword']) {
+      dialougeBox(context, 'Password And Retype Password Should be Equal!!');
+    } else {
+      progressIndicator(context);
+      try {
+        FirebaseAuth auth = FirebaseAuth.instance;
+        auth
+            .createUserWithEmailAndPassword(
+                email: _formData['email'].toString(),
+                password: _formData['password'].toString())
+            .whenComplete(() => goTo(context, LoginScreen()));
+      } on FirebaseAuthException catch (e) {
+        dialougeBox(context, e.toString());
+      } catch (e) {
+        dialougeBox(context, e.toString());
+      }
+    }
     print(_formData['email']);
     print(_formData['password']);
   }
@@ -128,7 +147,7 @@ class _RegisterChildScreenState extends State<RegisterChildScreen> {
                           },
                         ),
                         CustomTextfield(
-                          hintText: 'Retype Password',
+                          hintText: 'Enter Password',
                           isPassword: isPasswordShown,
                           prefix: Icon(Icons.vpn_key_rounded),
                           onsave: (password) {
@@ -151,11 +170,11 @@ class _RegisterChildScreenState extends State<RegisterChildScreen> {
                                   : Icon(Icons.visibility)),
                         ),
                         CustomTextfield(
-                          hintText: 'Enter Password',
+                          hintText: 'Retype Password',
                           isPassword: isPasswordShown,
                           prefix: Icon(Icons.vpn_key_rounded),
                           onsave: (password) {
-                            _formData['password'] = password ?? "";
+                            _formData['rpassword'] = password ?? "";
                           },
                           validate: (password) {
                             if (password!.isEmpty || password.length < 7) {

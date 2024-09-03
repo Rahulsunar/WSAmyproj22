@@ -19,6 +19,7 @@ class _RegisterParentScreenState extends State<RegisterParentScreen> {
 
   _onSubmit() {
     _formKey.currentState!.save();
+    progressIndicator(context);
     print(_formData['email']);
     print(_formData['password']);
   }
@@ -128,7 +129,7 @@ class _RegisterParentScreenState extends State<RegisterParentScreen> {
                           },
                         ),
                         CustomTextfield(
-                          hintText: 'Retype Password',
+                          hintText: 'Enter Password',
                           isPassword: isPasswordShown,
                           prefix: Icon(Icons.vpn_key_rounded),
                           onsave: (password) {
@@ -151,11 +152,11 @@ class _RegisterParentScreenState extends State<RegisterParentScreen> {
                                   : Icon(Icons.visibility)),
                         ),
                         CustomTextfield(
-                          hintText: 'Enter Password',
+                          hintText: 'Retype Password',
                           isPassword: isPasswordShown,
                           prefix: Icon(Icons.vpn_key_rounded),
                           onsave: (password) {
-                            _formData['password'] = password ?? "";
+                            _formData['rpassword'] = password ?? "";
                           },
                           validate: (password) {
                             if (password!.isEmpty || password.length < 7) {
