@@ -6,12 +6,12 @@ import 'package:women_safety_app/widgets/home_widgets/emergency.dart';
 import 'package:women_safety_app/widgets/home_widgets/safehome/SafeHome.dart';
 import 'package:women_safety_app/widgets/live_safe.dart';
 
-class HomeScreen extends StatefulWidget {
+class ChildHomePage extends StatefulWidget {
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<ChildHomePage> createState() => _ChildHomePageState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _ChildHomePageState extends State<ChildHomePage> {
   int qIndex = 0;
 
   getRandomQuote() {

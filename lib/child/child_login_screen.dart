@@ -6,7 +6,7 @@ import 'package:women_safety_app/components/SecondaryButton.dart';
 import 'package:women_safety_app/components/custom_textfield.dart';
 import 'package:women_safety_app/child/register_child.dart';
 import 'package:women_safety_app/db/share_pref.dart';
-import 'package:women_safety_app/home_screen.dart';
+import 'package:women_safety_app/child/bottom_screens/child_home_page.dart';
 import 'package:women_safety_app/parent/parent_home_screen.dart';
 import 'package:women_safety_app/parent/parent_register_screen.dart';
 import 'package:women_safety_app/utils/constants.dart';
@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
           } else {
             MySharedPrefference.saveUserType('child');
 
-            goTo(context, HomeScreen());
+            goTo(context, ChildHomePage());
           }
         });
       }
