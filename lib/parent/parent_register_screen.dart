@@ -48,6 +48,7 @@ class _RegisterParentScreenState extends State<RegisterParentScreen> {
             phone: _formData['phone'].toString(),
             childEmail: _formData['cemail'].toString(),
             parentEmail: _formData['gemail'].toString(),
+            type: 'parent',
           );
           final jsonData = User.toJson();
 
