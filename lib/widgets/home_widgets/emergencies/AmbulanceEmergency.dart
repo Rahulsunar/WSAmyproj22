@@ -53,7 +53,7 @@ class AmbulanceEmergency extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'In Case of Medical Emergency Call',
+                    'Medical Emergency Call',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: MediaQuery.of(context).size.width *

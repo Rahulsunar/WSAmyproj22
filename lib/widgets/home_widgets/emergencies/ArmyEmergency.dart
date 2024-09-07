@@ -53,7 +53,7 @@ class ArmyEmergency extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Directorate of Disater Mngmt Army',
+                    'Disater Mngmt Army',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: MediaQuery.of(context).size.width *

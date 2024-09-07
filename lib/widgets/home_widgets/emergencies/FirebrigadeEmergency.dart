@@ -53,7 +53,7 @@ class FirebrigadeEmergency extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'In Case of Fire Emergency Call',
+                    'Fire Emergency Call',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: MediaQuery.of(context).size.width *
