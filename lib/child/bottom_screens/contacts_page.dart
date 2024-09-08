@@ -12,10 +12,66 @@ class ContactsPage extends StatefulWidget {
 
 class _ContactsPageState extends State<ContactsPage> {
   List<Contact> contacts = [];
+  List<Contact> contactsFiltered = [];
+  TextEditingController searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     askPermissions(); // Optionally check permissions at init
+
+    // Add listener to searchController to update the contact list as the user types
+    searchController.addListener(() {
+      filterContact();
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose(); // Dispose controller to prevent memory leaks
+    super.dispose();
+  }
+
+  String flatternPhoneNumber(String phoneStr) {
+    return phoneStr.replaceAllMapped(RegExp(r'(\+)|\D'), (Match m) {
+      return m[0] == "+" ? "+" : "";
+    });
+  }
+
+  filterContact() {
+    List<Contact> _contacts = [];
+    _contacts.addAll(contacts);
+
+    if (searchController.text.isNotEmpty) {
+      String searchTerm = searchController.text.toLowerCase();
+      String searchTermFlattern = flatternPhoneNumber(searchTerm);
+
+      _contacts.retainWhere((contact) {
+        String contactName = contact.displayName?.toLowerCase() ?? '';
+        bool nameMatches = contactName.contains(searchTerm);
+
+        if (nameMatches) {
+          return true;
+        }
+        if (searchTermFlattern.isEmpty) {
+          return false;
+        }
+
+        // Search for phone number match
+        var phone = contact.phones!.firstWhere((p) {
+          String phnFlatterned = flatternPhoneNumber(p.value!);
+          return phnFlatterned.contains(searchTermFlattern);
+        },
+            orElse: () =>
+                Item(label: '', value: '')); // Return empty Item for phone
+
+        return phone.value!.isNotEmpty; // Check if phone value is not empty
+      });
+    }
+
+    setState(() {
+      contactsFiltered = _contacts;
+    });
   }
 
   Future<void> askPermissions() async {
@@ -31,7 +87,7 @@ class _ContactsPageState extends State<ContactsPage> {
     if (permissionStatus == PermissionStatus.denied) {
       dialougeBox(context, "Access to the contacts denied by the user");
     } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
-      dialougeBox(context, "Maybe Contacts doesn't exist on this device");
+      dialougeBox(context, "Maybe Contacts don't exist on this device");
     }
   }
 
@@ -39,35 +95,73 @@ class _ContactsPageState extends State<ContactsPage> {
     List<Contact> _contacts = await ContactsService.getContacts();
     setState(() {
       contacts = _contacts;
+      contactsFiltered =
+          _contacts; // Initialize filtered list with all contacts
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    bool isSearching = searchController.text.isNotEmpty;
+    bool listItemExist = (contactsFiltered.isNotEmpty || contacts.isNotEmpty);
     return Scaffold(
-        body: contacts.length == 0
-            ? Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                itemCount: contacts.length,
-                itemBuilder: (BuildContext context, int index) {
-                  Contact contact = contacts[index];
-                  return ListTile(
-                    title: Text(contact.displayName ?? 'Unknown Number'),
-                    subtitle: Text(contact.phones!.isNotEmpty
-                        ? contact.phones!.elementAt(0).value!
-                        : 'No phone number'),
-                    leading:
-                        contact.avatar != null && contact.avatar!.length > 0
-                            ? CircleAvatar(
-                                backgroundColor: primaryColor,
-                                backgroundImage: MemoryImage(contact.avatar!),
-                              )
-                            : CircleAvatar(
-                                backgroundColor: primaryColor,
-                                child: Text(contact.initials()),
-                              ),
-                  );
-                }));
+      body: contactsFiltered.isEmpty && isSearching
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      autofocus: true,
+                      controller: searchController,
+                      decoration: const InputDecoration(
+                        labelText: "Search Contact",
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                    ),
+                  ),
+                  listItemExist
+                      ? Expanded(
+                          child: ListView.builder(
+                            itemCount: isSearching
+                                ? contactsFiltered.length
+                                : contacts.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              Contact contact = isSearching
+                                  ? contactsFiltered[index]
+                                  : contacts[index];
+                              return ListTile(
+                                title: Text(
+                                  contact.displayName ?? 'Unknown Number',
+                                ),
+                                subtitle: Text(
+                                  contact.phones!.isNotEmpty
+                                      ? contact.phones!.elementAt(0).value!
+                                      : 'No phone number',
+                                ),
+                                leading: (contact.avatar != null &&
+                                        contact.avatar!.isNotEmpty)
+                                    ? CircleAvatar(
+                                        backgroundColor: primaryColor,
+                                        backgroundImage:
+                                            MemoryImage(contact.avatar!),
+                                      )
+                                    : CircleAvatar(
+                                        backgroundColor: primaryColor,
+                                        child: Text(contact.initials()),
+                                      ),
+                              );
+                            },
+                          ),
+                        )
+                      : Container(
+                          child: const Text("No contacts found."),
+                        ),
+                ],
+              ),
+            ),
+    );
   }
 }
 
