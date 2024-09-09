@@ -14,11 +14,12 @@ class _ContactsPageState extends State<ContactsPage> {
   List<Contact> contacts = [];
   List<Contact> contactsFiltered = [];
   TextEditingController searchController = TextEditingController();
+  bool loading = true; // Flag to indicate loading state
 
   @override
   void initState() {
     super.initState();
-    askPermissions(); // Optionally check permissions at init
+    askPermissions();
 
     // Add listener to searchController to update the contact list as the user types
     searchController.addListener(() {
@@ -97,16 +98,20 @@ class _ContactsPageState extends State<ContactsPage> {
       contacts = _contacts;
       contactsFiltered =
           _contacts; // Initialize filtered list with all contacts
+      loading = false; // Contacts have been loaded, so stop loading
     });
   }
 
   @override
   Widget build(BuildContext context) {
     bool isSearching = searchController.text.isNotEmpty;
-    bool listItemExist = (contactsFiltered.isNotEmpty || contacts.isNotEmpty);
+    bool listItemExist = contactsFiltered.isNotEmpty;
+
     return Scaffold(
-      body: contactsFiltered.isEmpty && isSearching
-          ? const Center(child: CircularProgressIndicator())
+      body: loading
+          ? const Center(
+              child:
+                  CircularProgressIndicator()) // Show loading indicator while fetching contacts
           : SafeArea(
               child: Column(
                 children: [
@@ -155,8 +160,8 @@ class _ContactsPageState extends State<ContactsPage> {
                             },
                           ),
                         )
-                      : Container(
-                          child: const Text("No contacts found."),
+                      : const Center(
+                          child: Text("No contacts found."),
                         ),
                 ],
               ),
