@@ -1,12 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:sqflite/sqlite_api.dart';
 import 'package:women_safety_app/child/bottom_screens/contacts_page.dart';
 import 'package:women_safety_app/components/PrimaryButton.dart';
+import 'package:women_safety_app/db/db_services.dart';
+import 'package:women_safety_app/model/contactsm.dart';
 
-class AddContacts extends StatelessWidget {
+class AddContacts extends StatefulWidget {
   const AddContacts({super.key});
 
   @override
+  State<AddContacts> createState() => _AddContactsState();
+}
+
+class _AddContactsState extends State<AddContacts> {
+  DatabaseHelper databaseHelper = DatabaseHelper();
+  List<TContact>? contactList;
+  int count = 0;
+
+  void showList() {
+    Future<Database> dbFuture = databaseHelper.initializeDatabase();
+    dbFuture.then((database) {
+      Future<List<TContact>> contactListFuture =
+          databaseHelper.getContactList();
+      contactListFuture.then((value) {
+        setState(() {
+          this.contactList = value;
+          this.count = value.length;
+        });
+      });
+    });
+  }
+
+  void deleteContact(TContact contact) async {
+    int result = await databaseHelper.deleteContact(contact.id);
+    if (result != 0) {
+      Fluttertoast.showToast(msg: "Contact Removed Successfully");
+      showList();
+    }
+  }
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      showList();
+    });
+
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (contactList == null) {
+      contactList = [];
+    }
     return SafeArea(
       child: Container(
         padding: EdgeInsets.all(12),
@@ -14,13 +61,36 @@ class AddContacts extends StatelessWidget {
           children: [
             Primarybutton(
                 title: "Add Trusted Contacts",
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  bool? result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ContactsPage(),
                       ));
+                  // Handle null case to avoid the error
+                  if (result == true) {
+                    showList();
+                  }
                 }),
+            Expanded(
+              child: ListView.builder(
+                  itemCount: count,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Card(
+                      child: ListTile(
+                        title: Text(contactList![index].name),
+                        trailing: IconButton(
+                            onPressed: () {
+                              deleteContact(contactList![index]);
+                            },
+                            icon: Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            )),
+                      ),
+                    );
+                  }),
+            ),
           ],
         ),
       ),

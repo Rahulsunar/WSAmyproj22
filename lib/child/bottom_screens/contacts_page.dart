@@ -1,6 +1,9 @@
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:women_safety_app/db/db_services.dart';
+import 'package:women_safety_app/model/contactsm.dart';
 import 'package:women_safety_app/utils/constants.dart';
 
 class ContactsPage extends StatefulWidget {
@@ -13,6 +16,7 @@ class ContactsPage extends StatefulWidget {
 class _ContactsPageState extends State<ContactsPage> {
   List<Contact> contacts = [];
   List<Contact> contactsFiltered = [];
+  DatabaseHelper _databaseHelper = DatabaseHelper();
   TextEditingController searchController = TextEditingController();
   bool loading = true; // Flag to indicate loading state
 
@@ -157,6 +161,18 @@ class _ContactsPageState extends State<ContactsPage> {
                                         backgroundColor: primaryColor,
                                         child: Text(contact.initials()),
                                       ),
+                                onTap: () {
+                                  if (contact.phones!.length > 0) {
+                                    final String phoneNum =
+                                        contact.phones!.elementAt(0).value!;
+                                    final String name = contact.displayName!;
+                                    _addContact(TContact(phoneNum, name));
+                                  } else {
+                                    Fluttertoast.showToast(
+                                        msg:
+                                            "Opps!! Phone Number Of this contact doesn't Exist");
+                                  }
+                                },
                               );
                             },
                           ),
@@ -168,6 +184,16 @@ class _ContactsPageState extends State<ContactsPage> {
               ),
             ),
     );
+  }
+
+  void _addContact(TContact newContact) async {
+    int result = await _databaseHelper.insertContact(newContact);
+    if (result != 0) {
+      Fluttertoast.showToast(msg: "Contact Added Successfully");
+    } else {
+      Fluttertoast.showToast(msg: "Failed To Add Contact");
+    }
+    Navigator.of(context).pop(true);
   }
 }
 
