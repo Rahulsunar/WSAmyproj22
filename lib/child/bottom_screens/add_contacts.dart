@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'package:women_safety_app/child/bottom_screens/contacts_page.dart';
@@ -77,16 +78,35 @@ class _AddContactsState extends State<AddContacts> {
                   itemCount: count,
                   itemBuilder: (BuildContext context, int index) {
                     return Card(
-                      child: ListTile(
-                        title: Text(contactList![index].name),
-                        trailing: IconButton(
-                            onPressed: () {
-                              deleteContact(contactList![index]);
-                            },
-                            icon: Icon(
-                              Icons.delete,
-                              color: Colors.red,
-                            )),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListTile(
+                          title: Text(contactList![index].name),
+                          trailing: Container(
+                            width: 100,
+                            child: Row(
+                              children: [
+                                IconButton(
+                                    onPressed: () async {
+                                      await FlutterPhoneDirectCaller.callNumber(
+                                          contactList![index].number);
+                                    },
+                                    icon: Icon(
+                                      Icons.call,
+                                      color: Colors.red,
+                                    )),
+                                IconButton(
+                                    onPressed: () {
+                                      deleteContact(contactList![index]);
+                                    },
+                                    icon: Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                    )),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     );
                   }),
