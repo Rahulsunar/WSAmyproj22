@@ -7,7 +7,9 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Scaffold(
-        body: Text("Profile Page"),
+        body: Center(
+          child: TextButton(onPressed: () {}, child: Text("SIGN OUT")),
+        ),
       ),
     );
   }
