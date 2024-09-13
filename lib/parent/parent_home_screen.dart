@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:women_safety_app/chat_module/chat_screen.dart';
+import 'package:women_safety_app/child/child_login_screen.dart';
 import 'package:women_safety_app/utils/constants.dart';
 
 class ParentHomeScreen extends StatelessWidget {
@@ -9,6 +11,25 @@ class ParentHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        drawer: Drawer(
+          child: Column(
+            children: [
+              DrawerHeader(child: Container()),
+              ListTile(
+                title: TextButton(
+                    onPressed: () async {
+                      try {
+                        FirebaseAuth.instance.signOut();
+                        goTo(context, LoginScreen());
+                      } on FirebaseException catch (e) {
+                        dialougeBox(context, e.toString());
+                      }
+                    },
+                    child: Text("SIGN OUT")),
+              )
+            ],
+          ),
+        ),
         appBar: AppBar(
           backgroundColor: Colors.pink,
           // backgroundColor: Color.fromARGB(255, 250, 163, 192),
@@ -37,6 +58,16 @@ class ParentHomeScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ListTile(
+                        onTap: () {
+                          goTo(
+                              context,
+                              ChatScreen(
+                                currentUserId:
+                                    FirebaseAuth.instance.currentUser!.uid,
+                                friendId: d.id,
+                                friendName: d['name'],
+                              ));
+                        },
                         title: Text(d['name']),
                       ),
                     ),
