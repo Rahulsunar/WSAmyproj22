@@ -98,7 +98,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 },
               ),
             ),
-            MessageTextField(),
+            MessageTextField(
+              currentId: widget.currentUserId,
+              friendId: widget.friendId,
+            ),
           ],
         ));
   }

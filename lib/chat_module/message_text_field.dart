@@ -1,16 +1,109 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 
 class MessageTextField extends StatefulWidget {
-  const MessageTextField({super.key});
+  final String currentId;
+  final String friendId;
+
+  const MessageTextField(
+      {super.key, required this.currentId, required this.friendId});
 
   @override
   State<MessageTextField> createState() => _MessageTextFieldState();
 }
 
 class _MessageTextFieldState extends State<MessageTextField> {
+  TextEditingController _controller = TextEditingController();
+  Position? _currentPosition;
+  String? _currentAddress;
+  String? message;
+  LocationPermission? permission;
+
+  // Get the current location of the user
+  Future _getCurrentLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      Fluttertoast.showToast(msg: "Please enable location services.");
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        Fluttertoast.showToast(msg: "Location permission denied.");
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      Fluttertoast.showToast(
+          msg: "Location permissions are permanently denied.");
+      return;
+    }
+
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        _currentPosition = position;
+        _getAddressFromLatLon();
+      });
+    } catch (e) {
+      Fluttertoast.showToast(msg: e.toString());
+    }
+  }
+
+  // Get the address based on latitude and longitude
+  _getAddressFromLatLon() async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+          _currentPosition!.latitude, _currentPosition!.longitude);
+
+      Placemark place = placemarks[0];
+      setState(() {
+        _currentAddress =
+            "${place.locality}, ${place.postalCode}, ${place.street}";
+      });
+    } catch (e) {
+      Fluttertoast.showToast(msg: e.toString());
+    }
+  }
+
+  sendMessage(String message, String type) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.currentId)
+        .collection('messages')
+        .doc(widget.friendId)
+        .collection('chats')
+        .add({
+      'senderId': widget.currentId,
+      'receiverId': widget.friendId,
+      'message': message,
+      'type': 'type',
+      'date': DateTime.now(),
+    });
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.friendId)
+        .collection('messages')
+        .doc(widget.currentId)
+        .collection('chats')
+        .add({
+      'senderId': widget.currentId,
+      'receiverId': widget.friendId,
+      'message': message,
+      'type': 'type',
+      'date': DateTime.now(),
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    TextEditingController _controller = TextEditingController();
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -26,30 +119,39 @@ class _MessageTextFieldState extends State<MessageTextField> {
                 cursorColor: Colors.pink,
                 controller: _controller,
                 decoration: InputDecoration(
-                  hintText: 'type your message',
+                  hintText: 'Type your message',
                   fillColor: Colors.grey[100],
                   filled: true,
                   prefixIcon: IconButton(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          backgroundColor: Colors.transparent,
-                          context: context,
-                          builder: (context) => bottomsheet(),
-                        );
-                      },
-                      icon: Icon(
-                        Icons.add_box_rounded,
-                        color: Colors.pink,
-                      )),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        backgroundColor: Colors.transparent,
+                        context: context,
+                        builder: (context) => bottomsheet(),
+                      );
+                    },
+                    icon: Icon(
+                      Icons.add_box_rounded,
+                      color: Colors.pink,
+                    ),
+                  ),
                 ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Icon(
-                Icons.send,
-                color: Colors.pink,
-                size: 30,
+              child: InkWell(
+                onTap: () async {
+                  message = _controller.text;
+                  sendMessage(message!, 'text');
+
+                  _controller.clear();
+                },
+                child: Icon(
+                  Icons.send,
+                  color: Colors.pink,
+                  size: 30,
+                ),
               ),
             ),
           ],
@@ -68,16 +170,23 @@ class _MessageTextFieldState extends State<MessageTextField> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            chatsIcon(Icons.location_pin, "location", () {}),
-            chatsIcon(Icons.camera_alt, "camera", () {}),
-            chatsIcon(Icons.insert_photo, "photo", () {}),
+            chatsIcon(Icons.location_pin, "Location", () async {
+              await _getCurrentLocation();
+              Future.delayed(Duration(seconds: 2), () {
+                message =
+                    "https://www.google.com/maps/search/?api=1&query=${_currentPosition!.latitude}%2C${_currentPosition!.longitude}.$_currentAddress";
+                sendMessage(message!, "link");
+              });
+            }),
+            chatsIcon(Icons.camera_alt, "Camera", () {}),
+            chatsIcon(Icons.insert_photo, "Photo", () {}),
           ],
         ),
       ),
     );
   }
 
-  chatsIcon(IconData icons, String title, VoidCallback onTap) {
+  chatsIcon(IconData icon, String title, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: Column(
@@ -86,9 +195,9 @@ class _MessageTextFieldState extends State<MessageTextField> {
           CircleAvatar(
             radius: 30,
             backgroundColor: Colors.pink,
-            child: Icon(icons),
+            child: Icon(icon),
           ),
-          Text("$title")
+          Text(title),
         ],
       ),
     );
