@@ -51,6 +51,10 @@ dependencies:
   background_sms: ^0.0.4
   geolocator: ^13.0.1
   geocoding: ^3.0.0
+  image_picker: ^1.1.2
+  uuid: ^4.5.0
+  firebase_storage: ^12.3.0
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:

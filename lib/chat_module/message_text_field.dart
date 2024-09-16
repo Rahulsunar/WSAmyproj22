@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 class MessageTextField extends StatefulWidget {
   final String currentId;
@@ -20,7 +25,29 @@ class _MessageTextFieldState extends State<MessageTextField> {
   Position? _currentPosition;
   String? _currentAddress;
   String? message;
+  File? imageFile;
   LocationPermission? permission;
+  Future getImage() async {
+    ImagePicker _picker = ImagePicker();
+    await _picker.pickImage(source: ImageSource.gallery).then((XFile? xFile) {
+      if (xFile != null) {
+        imageFile = File(xFile.path);
+        uploadImage();
+      }
+    });
+  }
+
+  Future uploadImage() async {
+    String fileName = Uuid().v1();
+    int status = 1;
+    var ref =
+        FirebaseStorage.instance.ref().child('images').child("$fileName.jpg");
+    var uploadTask = await ref.putFile(imageFile!);
+    if (status == 1) {
+      String imageUrl = await uploadTask.ref.getDownloadURL();
+      await sendMessage(imageUrl, 'img');
+    }
+  }
 
   // Get the current location of the user
   Future _getCurrentLocation() async {
@@ -84,7 +111,7 @@ class _MessageTextFieldState extends State<MessageTextField> {
       'senderId': widget.currentId,
       'receiverId': widget.friendId,
       'message': message,
-      'type': 'type',
+      'type': type,
       'date': DateTime.now(),
     });
     await FirebaseFirestore.instance
@@ -179,7 +206,9 @@ class _MessageTextFieldState extends State<MessageTextField> {
               });
             }),
             chatsIcon(Icons.camera_alt, "Camera", () {}),
-            chatsIcon(Icons.insert_photo, "Photo", () {}),
+            chatsIcon(Icons.insert_photo, "Photo", () async {
+              getImage();
+            }),
           ],
         ),
       ),
