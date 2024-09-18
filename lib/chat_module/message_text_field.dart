@@ -37,6 +37,16 @@ class _MessageTextFieldState extends State<MessageTextField> {
     });
   }
 
+  Future getImageFromCamera() async {
+    ImagePicker _picker = ImagePicker();
+    await _picker.pickImage(source: ImageSource.camera).then((XFile? xFile) {
+      if (xFile != null) {
+        imageFile = File(xFile.path);
+        uploadImage();
+      }
+    });
+  }
+
   Future uploadImage() async {
     String fileName = Uuid().v1();
     int status = 1;
@@ -205,9 +215,11 @@ class _MessageTextFieldState extends State<MessageTextField> {
                 sendMessage(message!, "link");
               });
             }),
-            chatsIcon(Icons.camera_alt, "Camera", () {}),
+            chatsIcon(Icons.camera_alt, "Camera", () async {
+              await getImageFromCamera();
+            }),
             chatsIcon(Icons.insert_photo, "Photo", () async {
-              getImage();
+              await getImage();
             }),
           ],
         ),
