@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:women_safety_app/chat_module/chat_screen.dart';
 import 'package:women_safety_app/utils/constants.dart';
 
 class ChatPage extends StatelessWidget {
@@ -38,6 +39,16 @@ class ChatPage extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: ListTile(
+                          onTap: () {
+                          goTo(
+                              context,
+                              ChatScreen(
+                                currentUserId:
+                                    FirebaseAuth.instance.currentUser!.uid,
+                                friendId: d.id,
+                                friendName: d['name'],
+                              ));
+                        },
                           title: Text(d['name']),
                         ),
                       ),
