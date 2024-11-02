@@ -18,8 +18,10 @@ class _SafehomeState extends State<Safehome> {
   Position? _currentPosition;
   String? _currentAddress;
   LocationPermission? permission;
+
   _getPermission() async => await [Permission.sms].request();
   _isPermissionGranted() async => await Permission.sms.status.isGranted;
+
   _sendSms(String phoneNumber, String message, {int? simSlot}) async {
     SmsStatus status = await BackgroundSms.sendMessage(
       phoneNumber: phoneNumber,
@@ -111,49 +113,48 @@ class _SafehomeState extends State<Safehome> {
                 ),
                 if (_currentPosition != null) Text(_currentAddress!),
                 Primarybutton(
-                    title: "GET LOCATION",
-                    onPressed: () {
-                      _getCurrentLocation();
-                    }),
+                  title: "GET LOCATION",
+                  onPressed: () {
+                    _getCurrentLocation();
+                  },
+                ),
                 SizedBox(
                   height: 10,
                 ),
                 Primarybutton(
-                    title: "SEND ALERT",
-                    onPressed: () async {
-                      List<TContact> contactList =
-                          await DatabaseHelper().getContactList();
-                      String recipients = "";
-                      int i = 1;
-                      for (TContact Contact in contactList) {
-                        recipients += Contact.number;
-                        if (i != contactList.length) {
-                          recipients = ",";
-                          i++;
-                        }
-                      }
-                      String messageBody =
-                          "https://www.google.com/maps/search/?api=1&query=${_currentPosition!.latitude}%2C${_currentPosition!.longitude}.$_currentAddress";
-                      if (await _isPermissionGranted()) {
-                        contactList.forEach((element) {
-                          _sendSms("${element.number}",
-                              "I am in trouble please reach me out at $messageBody",
-                              simSlot: 1);
-                        });
-                      } else {
-                        Fluttertoast.showToast(msg: "something went wrong");
-                      }
-                    }),
+                  title: "SEND ALERT",
+                  onPressed: () async {
+                    String recipients = "";
+                    List<TContact> contactList =
+                        await DatabaseHelper().getContactList();
+
+                    String messageBody =
+                        "https://www.google.com/maps/search/?api=1&query=33%2C33"; // Replace with actual latitude and longitude.
+                    if (await _isPermissionGranted()) {
+                      contactList.forEach((element) {
+                        _sendSms(
+                          element.number,
+                          "I am in trouble $messageBody",
+                        );
+                      });
+                    } else {
+                      Fluttertoast.showToast(
+                          msg:
+                              "Something went wrong. SMS permission not granted.");
+                    }
+                  },
+                ),
               ],
             ),
           ),
           width: 500,
           decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(30),
-              )),
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30),
+              topRight: Radius.circular(30),
+            ),
+          ),
         );
       },
     );
@@ -175,17 +176,19 @@ class _SafehomeState extends State<Safehome> {
           child: Row(
             children: [
               Expanded(
-                  child: Column(
-                children: [
-                  ListTile(
-                    title: Text("Send Location"),
-                    subtitle: Text("Share Location"),
-                  ),
-                ],
-              )),
+                child: Column(
+                  children: [
+                    ListTile(
+                      title: Text("Send Location"),
+                      subtitle: Text("Share Location"),
+                    ),
+                  ],
+                ),
+              ),
               ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.asset('assets/route.jpg')),
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset('assets/route.jpg'),
+              ),
             ],
           ),
         ),
