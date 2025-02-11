@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -27,6 +26,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String? profilePic;
   String? downloadUrl;
   bool IsSaving = false;
+
   getData() async {
     await FirebaseFirestore.instance
         .collection('users')
@@ -50,99 +50,105 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IsSaving == true
-          ? Center(
-              child: CircularProgressIndicator(
-                backgroundColor: Colors.pink,
-              ),
-            )
+      body: IsSaving
+          ? Center(child: CircularProgressIndicator(backgroundColor: Colors.pink))
           : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(18.0),
-                child: Center(
-                  child: Form(
-                      key: key,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Text(
-                            "UPDATE YOUR PROFILE",
-                            style: TextStyle(fontSize: 25),
-                          ),
-                          SizedBox(height: 15),
-                          GestureDetector(
-                            onTap: () async {
-                              final XFile? pickImage = await ImagePicker()
-                                  .pickImage(
-                                      source: ImageSource.gallery,
-                                      imageQuality: 50);
-                              if (pickImage != null) {
-                                setState(() {
-                                  profilePic = pickImage.path;
-                                });
-                              }
-                            },
-                            child: Container(
-                              child: profilePic == null
-                                  ? CircleAvatar(
-                                      backgroundColor: Colors.deepPurple,
-                                      radius: 80,
-                                      child: Center(
-                                          child: Image.asset(
-                                        'assets/add_pic.png',
-                                        height: 80,
-                                        width: 80,
-                                      )))
-                                  : profilePic!.contains('http')
-                                      ? CircleAvatar(
-                                          backgroundColor: Colors.deepPurple,
-                                          radius: 80,
-                                          backgroundImage:
-                                              NetworkImage(profilePic!),
-                                        )
-                                      : CircleAvatar(
-                                          backgroundColor: Colors.deepPurple,
-                                          radius: 80,
-                                          backgroundImage:
-                                              FileImage(File(profilePic!))),
-                            ),
-                          ),
-                          CustomTextfield(
-                            controller: nameC,
-                            hintText: nameC.text,
-                            validate: (v) {
-                              if (v!.isEmpty) {
-                                return 'please enter your updated name';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 25),
-                          Primarybutton(
-                              title: "UPDATE",
-                              onPressed: () async {
-                                if (key.currentState!.validate()) {
-                                  SystemChannels.textInput
-                                      .invokeMethod('TextInput.hide');
-                                  profilePic == null
-                                      ? Fluttertoast.showToast(
-                                          msg: 'please select profile picture')
-                                      : update();
-                                }
-                              })
-                        ],
-                      )),
-                ),
+        child: Padding(
+          padding: const EdgeInsets.all(18.0),
+          child: Center(
+            child: Form(
+              key: key,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text("UPDATE YOUR PROFILE", style: TextStyle(fontSize: 25)),
+                  SizedBox(height: 15),
+                  GestureDetector(
+                    onTap: () async {
+                      final XFile? pickImage = await ImagePicker().pickImage(
+                          source: ImageSource.gallery, imageQuality: 50);
+                      if (pickImage != null) {
+                        setState(() {
+                          profilePic = pickImage.path;
+                        });
+                      }
+                    },
+                    child: profilePic == null
+                        ? CircleAvatar(
+                        backgroundColor: Colors.deepPurple,
+                        radius: 80,
+                        child: Center(
+                            child: Image.asset('assets/add_pic.png',
+                                height: 80, width: 80)))
+                        : profilePic!.contains('http')
+                        ? CircleAvatar(
+                      backgroundColor: Colors.deepPurple,
+                      radius: 80,
+                      backgroundImage: NetworkImage(profilePic!),
+                    )
+                        : CircleAvatar(
+                        backgroundColor: Colors.deepPurple,
+                        radius: 80,
+                        backgroundImage: FileImage(File(profilePic!))),
+                  ),
+                  CustomTextfield(
+                    controller: nameC,
+                    hintText: nameC.text,
+                    validate: (v) {
+                      if (v!.isEmpty) {
+                        return 'please enter your updated name';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 25),
+                  Primarybutton(
+                    title: "UPDATE",
+                    onPressed: () async {
+                      if (key.currentState!.validate()) {
+                        SystemChannels.textInput.invokeMethod('TextInput.hide');
+                        profilePic == null
+                            ? Fluttertoast.showToast(
+                            msg: 'please select profile picture')
+                            : update();
+                      }
+                    },
+                  ),
+
+                  // 🔹 LOGOUT BUTTON ADDED HERE
+                  SizedBox(height: 15),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                    ),
+                    onPressed: logout, // Calls the logout function
+                    child: Text("LOGOUT", style: TextStyle(color: Colors.white)),
+                  ),
+                ],
               ),
             ),
+          ),
+        ),
+      ),
     );
+  }
+
+  // 🔹 LOGOUT FUNCTION
+  void logout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => LoginScreen()));
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Error: ${e.toString()}");
+    }
   }
 
   Future<String?> uploadImage(String filePath) async {
     try {
       final fileName = Uuid().v4();
-      final Reference fbStorage =
-          FirebaseStorage.instance.ref('profile').child(fileName);
+      final Reference fbStorage = FirebaseStorage.instance.ref('profile').child(fileName);
 
       final UploadTask uploadTask = fbStorage.putFile(File(filePath));
       await uploadTask.then((p0) async {
