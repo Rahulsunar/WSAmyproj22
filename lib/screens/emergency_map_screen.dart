@@ -155,7 +155,7 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Emergency Map (Free)"),
+        title: const Text("Emergency Map"),
         backgroundColor: Colors.pinkAccent,
       ),
       body: Stack(

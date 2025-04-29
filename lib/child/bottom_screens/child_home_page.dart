@@ -182,25 +182,7 @@ class _ChildHomePageState extends State<ChildHomePage> {
                     Padding(
                       padding:
                       const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => EmergencyMapScreen()),
-                          );
-                        },
-                        icon: Icon(Icons.map),
-                        label: Text("Show Nearest Help on Map"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.pinkAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 14),
-                          textStyle: TextStyle(fontSize: 16),
-                        ),
-                      ),
+
                     ),
                   ],
                 ),
