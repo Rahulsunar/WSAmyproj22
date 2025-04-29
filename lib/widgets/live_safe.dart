@@ -1,44 +1,70 @@
 import 'package:flutter/material.dart';
-import 'package:women_safety_app/utils/location_service.dart';
-import 'package:women_safety_app/utils/nearest_location.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:women_safety_app/widgets/home_widgets/live_safe/BusStationCard.dart';
+import 'package:women_safety_app/widgets/home_widgets/live_safe/HospitalCard.dart';
+import 'package:women_safety_app/widgets/home_widgets/live_safe/PharmacyCard.dart';
+import 'package:women_safety_app/widgets/home_widgets/live_safe/PoliceStationCard.dart';
+import 'package:women_safety_app/screens/emergency_map_screen.dart';
 
-class LiveSafe extends StatefulWidget {
-  @override
-  _LiveSafeState createState() => _LiveSafeState();
-}
 
-class _LiveSafeState extends State<LiveSafe> {
-  String nearestLocation = "Fetching...";
-  double distance = 0.0;
+class LiveSafe extends StatelessWidget {
+  const LiveSafe({super.key});
 
-  void fetchNearestLocation() async {
-    final position = await LocationService.getCurrentLocation();
-    if (position != null) {
-      final nearest = getNearestEmergency(position.latitude, position.longitude);
-      setState(() {
-        nearestLocation = nearest['name'];
-        distance = nearest['distance'];
-      });
+  static Future<void> OpenMap(String location) async {
+    String googleurl = 'https://www.google.com/maps/search/$location';
+    final Uri _url = Uri.parse(googleurl);
+    try {
+      await launchUrl(_url);
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: 'something went wrong!! Call emergency number');
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchNearestLocation();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text("Nearest Emergency Location: $nearestLocation"),
-        Text("Distance: ${distance.toStringAsFixed(2)} km"),
-        ElevatedButton(
-          onPressed: fetchNearestLocation,
-          child: Text("Refresh Location"),
+        Container(
+          height: 90,
+          width: MediaQuery.of(context).size.width,
+          child: ListView(
+            physics: BouncingScrollPhysics(),
+            scrollDirection: Axis.horizontal,
+            children: [
+              PoliceEmergency(onMapFunction: OpenMap),
+              Hospitalcard(onMapFunction: OpenMap),
+              Pharmacycard(onMapFunction: OpenMap),
+              Busstationcard(onMapFunction: OpenMap),
+            ],
+          ),
+        ),
+        SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => EmergencyMapScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.pinkAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+            ),
+            icon: Icon(Icons.map),
+            label: Text(
+              "Find Nearest Emergency Help",
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+          ),
         ),
       ],
     );
-  }
-}
+  }}

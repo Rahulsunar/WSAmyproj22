@@ -13,6 +13,7 @@ import 'package:women_safety_app/widgets/home_widgets/custom_appBar.dart';
 import 'package:women_safety_app/widgets/home_widgets/emergency.dart';
 import 'package:women_safety_app/widgets/home_widgets/safehome/SafeHome.dart';
 import 'package:women_safety_app/widgets/live_safe.dart';
+import 'package:women_safety_app/screens/emergency_map_screen.dart';
 
 class ChildHomePage extends StatefulWidget {
   @override
@@ -25,8 +26,10 @@ class _ChildHomePageState extends State<ChildHomePage> {
   Position? _currentPosition;
   String? _currentAddress;
   LocationPermission? permission;
+
   _getPermission() async => await [Permission.sms].request();
   _isPermissionGranted() async => await Permission.sms.status.isGranted;
+
   _sendSms(String phoneNumber, String message, {int? simSlot}) async {
     SmsStatus status = await BackgroundSms.sendMessage(
       phoneNumber: phoneNumber,
@@ -83,7 +86,7 @@ class _ChildHomePageState extends State<ChildHomePage> {
       Placemark place = placemarks[0];
       setState(() {
         _currentAddress =
-            "${place.locality},${place.postalCode},${place.street},";
+        "${place.locality},${place.postalCode},${place.street},";
       });
     } catch (e) {
       Fluttertoast.showToast(msg: e.toString());
@@ -124,7 +127,6 @@ class _ChildHomePageState extends State<ChildHomePage> {
     _getCurrentLocation();
 
     /////Shake feature /////
-
     ShakeDetector.autoStart(
       onPhoneShake: () {
         getAndSendSms();
@@ -133,16 +135,12 @@ class _ChildHomePageState extends State<ChildHomePage> {
             content: Text('Shake!'),
           ),
         );
-        // Do stuff on phone shake
       },
       minimumShakeCount: 1,
       shakeSlopTimeMS: 500,
       shakeCountResetTime: 3000,
       shakeThresholdGravity: 2.7,
     );
-
-    // To close: detector.stopListening();
-    // ShakeDetector.waitForStart() waits for user to call detector.startListening();
   }
 
   @override
@@ -181,6 +179,29 @@ class _ChildHomePageState extends State<ChildHomePage> {
                     ),
                     LiveSafe(),
                     Safehome(),
+                    Padding(
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => EmergencyMapScreen()),
+                          );
+                        },
+                        icon: Icon(Icons.map),
+                        label: Text("Show Nearest Help on Map"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.pinkAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 14),
+                          textStyle: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               )

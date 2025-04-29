@@ -1,5 +1,6 @@
 import 'package:background_sms/background_sms.dart';
 import 'package:contacts_service/contacts_service.dart';
+import 'package:women_safety_app/screens/emergency_map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoding/geocoding.dart';
@@ -108,46 +109,57 @@ class _SafehomeState extends State<Safehome> {
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 20),
                 ),
-                SizedBox(
-                  height: 10,
-                ),
-                if (_currentPosition != null) Text(_currentAddress!),
+                SizedBox(height: 10),
+                if (_currentPosition != null) Text(_currentAddress ?? ''),
                 Primarybutton(
                   title: "GET LOCATION",
                   onPressed: () {
                     _getCurrentLocation();
                   },
                 ),
-                SizedBox(
-                  height: 10,
-                ),
+                SizedBox(height: 10),
                 Primarybutton(
                   title: "SEND ALERT",
                   onPressed: () async {
-                    String recipients = "";
                     List<TContact> contactList =
-                        await DatabaseHelper().getContactList();
+                    await DatabaseHelper().getContactList();
+
+                    String lat = _currentPosition?.latitude.toString() ?? "0.0";
+                    String lng = _currentPosition?.longitude.toString() ?? "0.0";
 
                     String messageBody =
-                        "https://www.google.com/maps/search/?api=1&query=33%2C33"; // Replace with actual latitude and longitude.
+                        "https://www.google.com/maps/search/?api=1&query=$lat,$lng";
+
                     if (await _isPermissionGranted()) {
                       contactList.forEach((element) {
                         _sendSms(
                           element.number,
-                          "I am in trouble $messageBody",
+                          "I am in trouble. My location: $messageBody",
                         );
                       });
                     } else {
                       Fluttertoast.showToast(
-                          msg:
-                              "Something went wrong. SMS permission not granted.");
+                        msg: "SMS permission not granted.",
+                      );
                     }
+                  },
+                ),
+                SizedBox(height: 10),
+                Primarybutton(
+                  title: "SHOW NEAREST HELP ON MAP",
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EmergencyMapScreen(),
+                      ),
+                    );
                   },
                 ),
               ],
             ),
           ),
-          width: 500,
+          width: double.infinity,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
