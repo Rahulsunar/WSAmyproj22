@@ -27,8 +27,14 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
 
   final List<Map<String, dynamic>> emergencyLocations = [
     {'name': 'Patan Hospital', 'latlng': LatLng(27.6738, 85.3256)},
-    {'name': 'Police Station', 'latlng': LatLng(27.7077, 85.3155)},
-    {'name': 'Bus Stop Ratnapark', 'latlng': LatLng(27.7075, 85.3121)},
+    {'name': 'Norvic Hospital', 'latlng': LatLng(27.7000, 85.3180)},
+    {'name': 'Bir Hospital', 'latlng': LatLng(27.7079, 85.3153)},
+    {'name': 'Maternity Hospital', 'latlng': LatLng(27.7060, 85.3191)},
+    {'name': 'Police Station Durbar Marg', 'latlng': LatLng(27.7087, 85.3212)},
+    {'name': 'Metropolitan Police Circle', 'latlng': LatLng(27.7045, 85.3079)},
+    {'name': 'Ratnapark Bus Stop', 'latlng': LatLng(27.7075, 85.3121)},
+    {'name': 'Lagankhel Bus Park', 'latlng': LatLng(27.6667, 85.3242)},
+    {'name': 'Sundhara Bus Stop', 'latlng': LatLng(27.7005, 85.3117)},
   ];
 
   @override
@@ -181,17 +187,16 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
                             size: 30,
                           ),
                         ),
-                        if (nearestEmergencyLocation != null)
-                          Marker(
-                            width: 60.0,
-                            height: 60.0,
-                            point: nearestEmergencyLocation!,
-                            child: const Icon(
-                              Icons.location_on,
-                              color: Colors.red,
-                              size: 36,
-                            ),
-                          ),
+                        ...emergencyLocations.map((loc) => Marker(
+                              width: 60.0,
+                              height: 60.0,
+                              point: loc['latlng'],
+                              child: const Icon(
+                                Icons.local_hospital,
+                                color: Colors.redAccent,
+                                size: 30,
+                              ),
+                            )),
                       ],
                     ),
                     if (routePoints.isNotEmpty)
