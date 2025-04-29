@@ -1,9 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 
-class EmergencyMapScreen extends StatelessWidget {
+class EmergencyMapScreen extends StatefulWidget {
   const EmergencyMapScreen({Key? key}) : super(key: key);
+
+  @override
+  State<EmergencyMapScreen> createState() => _EmergencyMapScreenState();
+}
+
+class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
+  LatLng? userLocation;
+  final LatLng emergencyLocation = LatLng(27.6738, 85.3256); // Patan Hospital
+  final MapController mapController = MapController();
+
+  @override
+  void initState() {
+    super.initState();
+    _determinePosition();
+  }
+
+  Future<void> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await Geolocator.openLocationSettings();
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return;
+    }
+
+    Geolocator.getPositionStream().listen((Position position) {
+      setState(() {
+        userLocation = LatLng(position.latitude, position.longitude);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +57,12 @@ class EmergencyMapScreen extends StatelessWidget {
         title: const Text("Emergency Map (Free)"),
         backgroundColor: Colors.pinkAccent,
       ),
-      body: FlutterMap(
-        mapController: MapController(),
+      body: userLocation == null
+          ? const Center(child: CircularProgressIndicator())
+          : FlutterMap(
+        mapController: mapController,
         options: MapOptions(
-          initialCenter: LatLng(27.7056, 85.3159), // Kathmandu center
+          initialCenter: userLocation!,
           initialZoom: 13.0,
         ),
         children: [
@@ -29,17 +76,17 @@ class EmergencyMapScreen extends StatelessWidget {
               Marker(
                 width: 80.0,
                 height: 80.0,
-                point: LatLng(27.7056, 85.3159),
+                point: userLocation!,
                 child: const Icon(
-                  Icons.local_police,
-                  color: Colors.blue,
+                  Icons.person_pin_circle,
+                  color: Colors.green,
                   size: 30,
                 ),
               ),
               Marker(
                 width: 80.0,
                 height: 80.0,
-                point: LatLng(27.6738, 85.3256),
+                point: emergencyLocation,
                 child: const Icon(
                   Icons.local_hospital,
                   color: Colors.red,
@@ -51,10 +98,7 @@ class EmergencyMapScreen extends StatelessWidget {
           PolylineLayer(
             polylines: [
               Polyline(
-                points: [
-                  LatLng(27.7056, 85.3159),
-                  LatLng(27.6738, 85.3256),
-                ],
+                points: [userLocation!, emergencyLocation],
                 strokeWidth: 4.0,
                 color: Colors.pink,
               ),
