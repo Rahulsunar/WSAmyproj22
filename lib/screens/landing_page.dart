@@ -28,7 +28,7 @@ class LandingPage extends StatelessWidget {
                 child: const Text('Login As User'),
               ),
               ElevatedButton(
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GuardianLoginScreen())),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) =>  GuardianLoginScreen())),
                 child: const Text('Login As Guardian'),
               ),
               ElevatedButton(
