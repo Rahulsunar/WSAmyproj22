@@ -1,66 +1,25 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:women_safety_app/child/bottom_page.dart';
-
-import 'package:women_safety_app/child/child_login_screen.dart';
-import 'package:women_safety_app/db/share_pref.dart';
-
-import 'package:women_safety_app/parent/parent_home_screen.dart';
-import 'package:women_safety_app/utils/constants.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:women_safety_app/screens/landing_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await MySharedPrefference.init();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
+      title: 'Women Safety App',
       theme: ThemeData(
-        textTheme: GoogleFonts.firaSansTextTheme(Theme.of(context).textTheme),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.pink,
       ),
-      home: FutureBuilder(
-        future: MySharedPrefference.getUserType(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.data == "") {
-            return LoginScreen();
-          }
-          if (snapshot.data == "child") {
-            return BottomPage();
-          }
-          if (snapshot.data == "parent") {
-            return ParentHomeScreen();
-          }
-
-          return progressIndicator(context);
-        },
-      ),
+      debugShowCheckedModeBanner: false,
+      home: const LandingPage(),
     );
   }
 }
-
-// class CheckAuth extends StatelessWidget {
-//   // const CheckAuth({super.key});
-
-//   checkData() {
-//     if (MySharedPrefference.getUserType() == 'parent') {
-//       LoginScreen();
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold();
-//   }
-// }
