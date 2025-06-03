@@ -9,20 +9,44 @@ class GuardianRecordScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Guardian Record"), backgroundColor: Colors.pink),
       body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('users').where('type', isEqualTo: 'parent').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .where('type', isEqualTo: 'parent')
+            .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
 
           return ListView(
             children: snapshot.data!.docs.map((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+
               return Card(
                 child: ListTile(
-                  title: Text(doc['name'] ?? 'No name'),
-                  subtitle: Text('Guardian: ${doc['name']}\nEmail: ${doc['email']}\nChild Email: ${doc['childEmail']}\nPhone: ${doc['phone']}'),
+                  title: Text(data['name'] ?? 'No name'),
+                  subtitle: Text(
+                    'Guardian: ${data['name'] ?? 'N/A'}\n'
+                        'Guardian email: ${data.containsKey('email') ? data['email'] : 'N/A'}\n'
+                        'Child email: ${data.containsKey('childEmail') ? data['childEmail'] : 'N/A'}\n'
+                        'Phone: ${data.containsKey('phone') ? data['phone'] : 'N/A'}',
+                  ),
                   trailing: Switch(
-                    value: doc['blocked'] == true,
-                    onChanged: (val) {
-                      FirebaseFirestore.instance.collection('users').doc(doc.id).update({'blocked': val});
+                    value: false,
+                    onChanged: (val) async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text("Confirm Deletion"),
+                          content: const Text("Are you sure you want to delete this guardian?"),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
+                            TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Delete")),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        await FirebaseFirestore.instance.collection('users').doc(doc.id).delete();
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Guardian deleted")));
+                      }
                     },
                   ),
                 ),
