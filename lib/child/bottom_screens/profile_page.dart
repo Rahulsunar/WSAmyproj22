@@ -51,82 +51,118 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IsSaving
-          ? Center(child: CircularProgressIndicator(backgroundColor: Colors.pink))
+          ? const Center(child: CircularProgressIndicator(color: Colors.pink))
           : SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(18.0),
-          child: Center(
-            child: Form(
-              key: key,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Text("UPDATE YOUR PROFILE", style: TextStyle(fontSize: 25)),
-                  SizedBox(height: 15),
-                  GestureDetector(
-                    onTap: () async {
-                      final XFile? pickImage = await ImagePicker().pickImage(
-                          source: ImageSource.gallery, imageQuality: 50);
-                      if (pickImage != null) {
-                        setState(() {
-                          profilePic = pickImage.path;
-                        });
-                      }
-                    },
-                    child: profilePic == null
-                        ? CircleAvatar(
-                        backgroundColor: Colors.deepPurple,
-                        radius: 80,
-                        child: Center(
-                            child: Image.asset('assets/add_pic.png',
-                                height: 80, width: 80)))
-                        : profilePic!.contains('http')
-                        ? CircleAvatar(
-                      backgroundColor: Colors.deepPurple,
-                      radius: 80,
-                      backgroundImage: NetworkImage(profilePic!),
-                    )
-                        : CircleAvatar(
-                        backgroundColor: Colors.deepPurple,
-                        radius: 80,
-                        backgroundImage: FileImage(File(profilePic!))),
-                  ),
-                  CustomTextfield(
-                    controller: nameC,
-                    hintText: nameC.text,
-                    validate: (v) {
-                      if (v!.isEmpty) {
-                        return 'please enter your updated name';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 25),
-                  Primarybutton(
-                    title: "UPDATE",
-                    onPressed: () async {
-                      if (key.currentState!.validate()) {
-                        SystemChannels.textInput.invokeMethod('TextInput.hide');
-                        profilePic == null
-                            ? Fluttertoast.showToast(
-                            msg: 'please select profile picture')
-                            : update();
-                      }
-                    },
-                  ),
-
-                  // 🔹 LOGOUT BUTTON ADDED HERE
-                  SizedBox(height: 15),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Colors.pinkAccent, Colors.deepPurple],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    onPressed: logout, // Calls the logout function
-                    child: Text("LOGOUT", style: TextStyle(color: Colors.white)),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ],
-              ),
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          final XFile? pickImage =
+                          await ImagePicker().pickImage(
+                            source: ImageSource.gallery,
+                            imageQuality: 50,
+                          );
+                          if (pickImage != null) {
+                            setState(() {
+                              profilePic = pickImage.path;
+                            });
+                          }
+                        },
+                        child: profilePic == null
+                            ? const CircleAvatar(
+                          backgroundColor: Colors.white,
+                          radius: 60,
+                          child: Icon(Icons.add_a_photo,
+                              size: 40, color: Colors.pink),
+                        )
+                            : CircleAvatar(
+                          radius: 60,
+                          backgroundColor: Colors.white,
+                          backgroundImage: profilePic!
+                              .contains('http')
+                              ? NetworkImage(profilePic!)
+                          as ImageProvider
+                              : FileImage(File(profilePic!)),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        "Update Your Profile",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 30),
+                Form(
+                  key: key,
+                  child: Column(
+                    children: [
+                      CustomTextfield(
+                        controller: nameC,
+                        hintText: "Enter your name",
+                        validate: (v) {
+                          if (v!.isEmpty) {
+                            return 'Please enter your updated name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 25),
+                      Primarybutton(
+                        title: "UPDATE",
+                        onPressed: () async {
+                          if (key.currentState!.validate()) {
+                            SystemChannels.textInput
+                                .invokeMethod('TextInput.hide');
+                            profilePic == null
+                                ? Fluttertoast.showToast(
+                                msg: 'Please select a profile picture')
+                                : update();
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 30, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.logout),
+                        label: const Text(
+                          "LOGOUT",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: logout,
+                      ),
+                    ],
+                  ),
+                )
+              ],
             ),
           ),
         ),
@@ -134,12 +170,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // 🔹 LOGOUT FUNCTION
   void logout() async {
     try {
       await FirebaseAuth.instance.signOut();
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => LoginScreen()));
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
     } catch (e) {
       Fluttertoast.showToast(msg: "Error: ${e.toString()}");
     }
@@ -147,35 +184,32 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<String?> uploadImage(String filePath) async {
     try {
-      final fileName = Uuid().v4();
-      final Reference fbStorage = FirebaseStorage.instance.ref('profile').child(fileName);
+      final fileName = const Uuid().v4();
+      final Reference fbStorage =
+      FirebaseStorage.instance.ref('profile').child(fileName);
 
       final UploadTask uploadTask = fbStorage.putFile(File(filePath));
-      await uploadTask.then((p0) async {
-        downloadUrl = await fbStorage.getDownloadURL();
-      });
+      await uploadTask;
+      downloadUrl = await fbStorage.getDownloadURL();
       return downloadUrl;
     } catch (e) {
       Fluttertoast.showToast(msg: e.toString());
     }
+    return null;
   }
 
   update() async {
-    setState(() {
-      IsSaving = true;
-    });
-    uploadImage(profilePic!).then((value) {
-      Map<String, dynamic> data = {
-        'name': nameC.text,
-        'profilePic': downloadUrl,
-      };
+    setState(() => IsSaving = true);
+    await uploadImage(profilePic!).then((value) {
       FirebaseFirestore.instance
           .collection('users')
           .doc(FirebaseAuth.instance.currentUser!.uid)
-          .update(data);
-      setState(() {
-        IsSaving = false;
+          .update({
+        'name': nameC.text,
+        'profilePic': downloadUrl,
       });
+      setState(() => IsSaving = false);
+      Fluttertoast.showToast(msg: "Profile updated successfully!");
     });
   }
 }

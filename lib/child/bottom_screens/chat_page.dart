@@ -9,55 +9,99 @@ class ChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.pink,
-            // backgroundColor: Color.fromARGB(255, 250, 163, 192),
-            title: Text("SELECT GUARDIAN"),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Select Guardian",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.pink, Colors.white],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
-          body: StreamBuilder(
-            stream: FirebaseFirestore.instance
-                .collection('users')
-                .where('type', isEqualTo: 'parent')
-                .where('childEmail',
-                    isEqualTo: FirebaseAuth.instance.currentUser!.email)
-                .snapshots(),
-            builder:
-                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (!snapshot.hasData) {
-                return Center(child: progressIndicator(context));
-              }
-              return ListView.builder(
-                itemCount: snapshot.data!.docs.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final d = snapshot.data!.docs[index];
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      color: Color.fromARGB(255, 250, 163, 192),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ListTile(
-                          onTap: () {
-                          goTo(
-                              context,
-                              ChatScreen(
-                                currentUserId:
-                                    FirebaseAuth.instance.currentUser!.uid,
-                                friendId: d.id,
-                                friendName: d['name'],
-                              ));
-                        },
-                          title: Text(d['name']),
-                        ),
-                      ),
+        ),
+        centerTitle: true,
+        elevation: 4,
+      ),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .where('type', isEqualTo: 'parent')
+            .where('childEmail',
+            isEqualTo: FirebaseAuth.instance.currentUser!.email)
+            .snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (!snapshot.hasData) {
+            return Center(child: progressIndicator(context));
+          }
+
+          if (snapshot.data!.docs.isEmpty) {
+            return const Center(
+              child: Text(
+                'No guardians found.',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(10),
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (BuildContext context, int index) {
+              final d = snapshot.data!.docs[index];
+              return GestureDetector(
+                onTap: () {
+                  goTo(
+                    context,
+                    ChatScreen(
+                      currentUserId: FirebaseAuth.instance.currentUser!.uid,
+                      friendId: d.id,
+                      friendName: d['name'],
                     ),
                   );
                 },
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  elevation: 5,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  child: ListTile(
+                    contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.pink[200],
+                      child: Text(
+                        d['name'][0].toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.pink,
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      d['name'],
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.chat_bubble_outline,
+                      color: Colors.purple,
+                    ),
+                  ),
+                ),
               );
             },
-          )),
+          );
+        },
+      ),
     );
   }
 }
