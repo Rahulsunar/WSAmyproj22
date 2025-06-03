@@ -12,6 +12,8 @@ import 'package:women_safety_app/components/PrimaryButton.dart';
 import 'package:women_safety_app/components/custom_textfield.dart';
 import 'package:women_safety_app/utils/constants.dart';
 
+import '../../screens/landing_page.dart';
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -175,7 +177,7 @@ class _ProfilePageState extends State<ProfilePage> {
       await FirebaseAuth.instance.signOut();
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(builder: (context) => LandingPage()),
       );
     } catch (e) {
       Fluttertoast.showToast(msg: "Error: ${e.toString()}");
