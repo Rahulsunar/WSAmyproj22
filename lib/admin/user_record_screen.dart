@@ -31,20 +31,36 @@ class UserRecordScreen extends StatelessWidget {
                   trailing: Switch(
                     value: false,
                     onChanged: (val) async {
-                      final confirm = await showDialog<bool>(
+                      bool? confirm = await showDialog(
                         context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text("Confirm Deletion"),
-                          content: const Text("Are you sure you want to delete this user?"),
+                        builder: (_) => AlertDialog(
+                          title: Text("Confirm Deletion"),
+                          content: Text("Are you sure you want to delete this user?"),
                           actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
-                            TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Delete")),
+                            TextButton(onPressed: () => Navigator.pop(context, false), child: Text("Cancel")),
+                            TextButton(onPressed: () => Navigator.pop(context, true), child: Text("Delete")),
                           ],
                         ),
                       );
+
                       if (confirm == true) {
+                        final deletedData = data;
                         await FirebaseFirestore.instance.collection('users').doc(doc.id).delete();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("User deleted")));
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("User deleted"),
+                            action: SnackBarAction(
+                              label: "UNDO",
+                              onPressed: () async {
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(doc.id)
+                                    .set(deletedData);
+                              },
+                            ),
+                          ),
+                        );
                       }
                     },
                   ),
