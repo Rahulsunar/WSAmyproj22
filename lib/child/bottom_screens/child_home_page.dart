@@ -13,7 +13,6 @@ import 'package:women_safety_app/widgets/home_widgets/custom_appBar.dart';
 import 'package:women_safety_app/widgets/home_widgets/emergency.dart';
 import 'package:women_safety_app/widgets/home_widgets/safehome/SafeHome.dart';
 import 'package:women_safety_app/widgets/live_safe.dart';
-import 'package:women_safety_app/screens/emergency_map_screen.dart';
 
 class ChildHomePage extends StatefulWidget {
   @override
@@ -22,10 +21,10 @@ class ChildHomePage extends StatefulWidget {
 
 class _ChildHomePageState extends State<ChildHomePage> {
   int qIndex = 0;
-
   Position? _currentPosition;
   String? _currentAddress;
   LocationPermission? permission;
+  ShakeDetector? shakeDetector;
 
   _getPermission() async => await [Permission.sms].request();
   _isPermissionGranted() async => await Permission.sms.status.isGranted;
@@ -37,16 +36,18 @@ class _ChildHomePageState extends State<ChildHomePage> {
       simSlot: simSlot,
     );
 
-    if (status == SmsStatus.sent) {
-      Fluttertoast.showToast(msg: "Message sent successfully");
-    } else {
-      Fluttertoast.showToast(msg: "Failed to send message");
-    }
+    if (!mounted) return;
+    Fluttertoast.showToast(
+      msg: status == SmsStatus.sent
+          ? "Message sent successfully"
+          : "Failed to send message",
+    );
   }
 
   _getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
+      if (!mounted) return;
       Fluttertoast.showToast(msg: "Please enable location services.");
       return;
     }
@@ -55,12 +56,14 @@ class _ChildHomePageState extends State<ChildHomePage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        if (!mounted) return;
         Fluttertoast.showToast(msg: "Location permission denied.");
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
+      if (!mounted) return;
       Fluttertoast.showToast(
           msg: "Location permissions are permanently denied.");
       return;
@@ -69,11 +72,13 @@ class _ChildHomePageState extends State<ChildHomePage> {
     try {
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
+      if (!mounted) return;
       setState(() {
         _currentPosition = position;
-        _getAddressFromLatlon();
       });
+      _getAddressFromLatlon();
     } catch (e) {
+      if (!mounted) return;
       Fluttertoast.showToast(msg: e.toString());
     }
   }
@@ -81,39 +86,41 @@ class _ChildHomePageState extends State<ChildHomePage> {
   _getAddressFromLatlon() async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
-          _currentPosition!.latitude, _currentPosition!.longitude);
+        _currentPosition!.latitude,
+        _currentPosition!.longitude,
+      );
 
+      if (!mounted) return;
       Placemark place = placemarks[0];
       setState(() {
         _currentAddress =
         "${place.locality},${place.postalCode},${place.street},";
       });
     } catch (e) {
+      if (!mounted) return;
       Fluttertoast.showToast(msg: e.toString());
     }
   }
 
   getRandomQuote() {
+    if (!mounted) return;
     Random random = Random();
-
     setState(() {
-      qIndex = random.nextInt(6); // Change the quote
+      qIndex = random.nextInt(6);
     });
   }
 
   getAndSendSms() async {
     List<TContact> contactList = await DatabaseHelper().getContactList();
-
     String messageBody =
-        "https://maps.google.com/?daddr=${_currentPosition!.latitude}, ${_currentPosition!.longitude}";
+        "https://maps.google.com/?daddr=${_currentPosition?.latitude ?? 0},${_currentPosition?.longitude ?? 0}";
+
     if (await _isPermissionGranted()) {
-      contactList.forEach((element) {
-        _sendSms(
-          element.number,
-          "I am in trouble $messageBody",
-        );
-      });
+      for (var element in contactList) {
+        _sendSms(element.number, "I am in trouble $messageBody");
+      }
     } else {
+      if (!mounted) return;
       Fluttertoast.showToast(
           msg: "Something went wrong. SMS permission not granted.");
     }
@@ -121,26 +128,26 @@ class _ChildHomePageState extends State<ChildHomePage> {
 
   @override
   void initState() {
-    getRandomQuote();
     super.initState();
+    getRandomQuote();
     _getPermission();
     _getCurrentLocation();
 
-    /////Shake feature /////
-    ShakeDetector.autoStart(
+    shakeDetector = ShakeDetector.autoStart(
       onPhoneShake: () {
         getAndSendSms();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Shake!'),
-          ),
+          const SnackBar(content: Text('Shake detected! Sending alert...')),
         );
       },
-      minimumShakeCount: 1,
-      shakeSlopTimeMS: 500,
-      shakeCountResetTime: 3000,
-      shakeThresholdGravity: 2.7,
     );
+  }
+
+  @override
+  void dispose() {
+    shakeDetector?.stopListening();
+    super.dispose();
   }
 
   @override
@@ -159,34 +166,30 @@ class _ChildHomePageState extends State<ChildHomePage> {
                 child: ListView(
                   shrinkWrap: true,
                   children: [
-                    CustomCarousel(),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
+                    const CustomCarousel(),
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
                       child: Text(
                         "Emergency",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                        style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    Emergency(),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
+                    const Emergency(),
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
                       child: Text(
                         "Explore LiveSafe",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                        style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    LiveSafe(),
+                    const LiveSafe(),
+                    // ✅ Removed `const` before Safehome to fix error
                     Safehome(),
-                    Padding(
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-
-                    ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),

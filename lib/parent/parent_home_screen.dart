@@ -80,7 +80,7 @@ class ParentHomeScreen extends StatelessWidget {
             gradient: LinearGradient(colors: [Colors.pink, Colors.pinkAccent]),
           ),
         ),
-        title: Text("Select Child"),
+        title: Text("Select User"),
         centerTitle: true,
       ),
       body: StreamBuilder(
@@ -98,7 +98,7 @@ class ParentHomeScreen extends StatelessWidget {
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
               child: Text(
-                "No connected children found.",
+                "No connected Users found.",
                 style: TextStyle(fontSize: 18),
               ),
             );

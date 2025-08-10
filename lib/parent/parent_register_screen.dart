@@ -54,7 +54,7 @@ class _RegisterParentScreenState extends State<RegisterParentScreen> {
           final jsonData = User.toJson();
 
           await db.set(jsonData).whenComplete(() {
-            goTo(context, LoginScreen());
+            goTo(context, GuardianLoginScreen());
             setState(() {
               isLoading = false;
             });
@@ -98,7 +98,7 @@ class _RegisterParentScreenState extends State<RegisterParentScreen> {
               children: [
                 const SizedBox(height: 24),
                 Text(
-                  "REGISTER AS PARENT",
+                  "REGISTER AS GUARDIAN",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 32,

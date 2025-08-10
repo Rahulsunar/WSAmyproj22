@@ -107,7 +107,7 @@ class _RegisterChildScreenState extends State<RegisterChildScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 Text(
-                                  "REGISTER AS CHILD",
+                                  "REGISTER AS USER",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 40,

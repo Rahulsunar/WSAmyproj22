@@ -26,7 +26,7 @@ class GuardianRecordScreen extends StatelessWidget {
                   subtitle: Text(
                     'Guardian: ${data['name'] ?? 'N/A'}\n'
                         'Guardian email: ${data.containsKey('email') ? data['email'] : 'N/A'}\n'
-                        'Child email: ${data.containsKey('childEmail') ? data['childEmail'] : 'N/A'}\n'
+                        'User email: ${data.containsKey('childEmail') ? data['childEmail'] : 'N/A'}\n'
                         'Phone: ${data.containsKey('phone') ? data['phone'] : 'N/A'}',
                   ),
                   trailing: Switch(

@@ -172,7 +172,7 @@ class _LoginScreenState extends State<GuardianLoginScreen> {
                   ),
                   const SizedBox(height: 12),
                   Secondarybutton(
-                    title: 'Register As Parent',
+                    title: 'Register As Guardian',
                     onPressed: () {
                       goTo(context, RegisterParentScreen());
                     },
