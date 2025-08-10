@@ -47,7 +47,7 @@ class LandingPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.red,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -64,7 +64,7 @@ class LandingPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildLoginButton(
                     context,
-                    label: 'Login As Gurdian',
+                    label: 'Login As Guardian',
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => GuardianLoginScreen()),
